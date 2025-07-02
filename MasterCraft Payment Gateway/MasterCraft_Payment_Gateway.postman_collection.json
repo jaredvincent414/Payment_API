@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "mastercraft-payment-gateway",
+		"name": "MasterCraft Payment Gateway API",
+		"description": "A complete collection for testing the MasterCraft Payment Gateway API with PayPal integration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "List All Payments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						""
+					]
+				},
+				"description": "Get a list of all payments in the system"
+			},
+			"response": []
+		},
+		{
+			"name": "Initiate Payment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"john@example.com\",\n    \"amount\": 50.00,\n    \"currency\": \"USD\",\n    \"description\": \"Payment for services\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/initiate/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						"initiate",
+						""
+					]
+				},
+				"description": "Create a new payment transaction using PayPal"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Payment Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/{{payment_id}}/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						"{{payment_id}}",
+						""
+					]
+				},
+				"description": "Get the status of a specific payment by payment ID"
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Payment",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/{{payment_id}}/verify/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						"{{payment_id}}",
+						"verify",
+						""
+					]
+				},
+				"description": "Manually verify a payment status with PayPal"
+			},
+			"response": []
+		},
+		{
+			"name": "Payment Success Redirect",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/success/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						"success",
+						""
+					]
+				},
+				"description": "Handle successful payment redirects from PayPal"
+			},
+			"response": []
+		},
+		{
+			"name": "Payment Cancel Redirect",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/api/v1/payments/cancel/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"payments",
+						"cancel",
+						""
+					]
+				},
+				"description": "Handle cancelled payment redirects from PayPal"
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "payment_id",
+			"value": "PAY-12345678",
+			"description": "Payment ID to use in requests (replace with actual payment ID from initiate payment response)"
+		}
+	]
+} 

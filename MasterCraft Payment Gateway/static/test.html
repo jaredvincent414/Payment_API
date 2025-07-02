@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasterCraft Payment Gateway - Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .endpoint {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MasterCraft Payment Gateway</h1>
+        <p style="text-align: center; color: #666;">Test Interface for Payment API</p>
+        
+        <div class="endpoint">
+            <strong>API Base URL:</strong> http://localhost:8000/api/v1
+        </div>
+
+        <!-- Initiate Payment Form -->
+        <h2>Initiate Payment</h2>
+        <form id="paymentForm">
+            <div class="form-group">
+                <label for="customerName">Customer Name:</label>
+                <input type="text" id="customerName" value="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label for="customerEmail">Customer Email:</label>
+                <input type="email" id="customerEmail" value="john@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" value="50.00" step="0.01" min="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="currency">Currency:</label>
+                <select id="currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <input type="text" id="description" value="Payment for services">
+            </div>
+            <button type="submit">Initiate Payment</button>
+        </form>
+
+        <!-- Get Payment Status -->
+        <h2>Get Payment Status</h2>
+        <div class="form-group">
+            <label for="paymentId">Payment ID:</label>
+            <input type="text" id="paymentId" placeholder="Enter payment ID (e.g., PAY-12345678)">
+        </div>
+        <button onclick="getPaymentStatus()">Get Status</button>
+        <button onclick="loadPaymentIds()">Load Available Payment IDs</button>
+        <div id="paymentIdsList" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+
+        <!-- List Payments -->
+        <h2>List All Payments</h2>
+        <button onclick="listPayments()">List Payments</button>
+
+        <!-- Response Area -->
+        <div id="response" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+
+        function showResponse(data, type = 'info') {
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.className = `response ${type}`;
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data, 'success');
+                } else {
+                    showResponse(data, 'error');
+                }
+                
+                return data;
+            } catch (error) {
+                showResponse({ error: error.message }, 'error');
+            }
+        }
+
+        // Initiate Payment
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const paymentData = {
+                customer_name: document.getElementById('customerName').value,
+                customer_email: document.getElementById('customerEmail').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                currency: document.getElementById('currency').value,
+                description: document.getElementById('description').value
+            };
+
+            await makeRequest(`${API_BASE}/payments/initiate/`, {
+                method: 'POST',
+                body: JSON.stringify(paymentData)
+            });
+        });
+
+        // Get Payment Status
+        async function getPaymentStatus() {
+            const paymentId = document.getElementById('paymentId').value.trim();
+            if (!paymentId) {
+                showResponse({ error: 'Please enter a payment ID' }, 'error');
+                return;
+            }
+
+            console.log('Attempting to get status for payment ID:', paymentId);
+            
+            try {
+                const response = await fetch(`${API_BASE}/payments/${paymentId}/`);
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    showResponse(data, 'success');
+                } else {
+                    showResponse(data, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showResponse({ error: `Network error: ${error.message}` }, 'error');
+            }
+        }
+
+        // List Payments
+        async function listPayments() {
+            await makeRequest(`${API_BASE}/payments/`);
+        }
+
+        // Load Available Payment IDs
+        async function loadPaymentIds() {
+            try {
+                const response = await fetch(`${API_BASE}/payments/`);
+                const data = await response.json();
+                
+                if (data.payments && data.payments.length > 0) {
+                    const paymentIdsList = document.getElementById('paymentIdsList');
+                    const ids = data.payments.map(payment => 
+                        `${payment.payment_id} (${payment.customer_name} - $${payment.amount})`
+                    ).join(', ');
+                    paymentIdsList.innerHTML = `<strong>Available Payment IDs:</strong> ${ids}`;
+                } else {
+                    document.getElementById('paymentIdsList').innerHTML = '<strong>No payments found</strong>';
+                }
+            } catch (error) {
+                document.getElementById('paymentIdsList').innerHTML = '<strong>Error loading payment IDs</strong>';
+            }
+        }
+
+        // Test API connection on page load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/payments/`);
+                if (response.ok) {
+                    console.log('✅ API is accessible');
+                } else {
+                    console.log('⚠️ API returned status:', response.status);
+                }
+            } catch (error) {
+                console.log('❌ Cannot connect to API:', error.message);
+            }
+        });
+    </script>
+</body>
+</html> 
